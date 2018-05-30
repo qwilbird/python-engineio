@@ -53,7 +53,7 @@ class Socket(object):
         if pkt.packet_type == packet.PING:
             self.last_ping = time.time()
             self.send(packet.Packet(packet.PONG, pkt.data))
-            self.server._trigger_event('message', self.sid, 'PING',
+            self.server._trigger_event('message', self.sid, '2["PING"]',
                                        run_async=self.server.async_handlers)
         elif pkt.packet_type == packet.MESSAGE:
             self.server._trigger_event('message', self.sid, pkt.data,
