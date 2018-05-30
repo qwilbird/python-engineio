@@ -39,6 +39,9 @@ class AsyncSocket(socket.Socket):
         if pkt.packet_type == packet.PING:
             self.last_ping = time.time()
             await self.send(packet.Packet(packet.PONG, pkt.data))
+            await self.server._trigger_event(
+                'message', self.sid, 'PING',
+                run_async=self.server.async_handlers)
         elif pkt.packet_type == packet.MESSAGE:
             await self.server._trigger_event(
                 'message', self.sid, pkt.data,

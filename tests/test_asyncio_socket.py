@@ -101,6 +101,8 @@ class TestSocket(unittest.TestCase):
         r = _run(s.poll())
         self.assertEqual(len(r), 1)
         self.assertTrue(r[0].encode(), b'3abc')
+        mock_server._trigger_event.mock.assert_called_once_with(
+            'message', 'sid', 'PING', run_async=False)
 
     def test_message_sync_handler(self):
         mock_server = self._get_mock_server()
