@@ -371,10 +371,17 @@ class Server(object):
         s.send(pkt)
 
         ret = self._trigger_event('connect', sid, environ, run_async=False)
-        if ret is False:
+        if isinstance(ret, int) and (int(ret) >= 400 or ret is False):
             del self.sockets[sid]
             self.logger.warning('Application rejected connection')
-            return self._unauthorized()
+            if ret == 403:
+                return self._forbidden()
+            elif ret == 419:
+                return self._authentication_timeout()
+            elif ret == 428:
+                return self._precondition_required()
+            else:
+                return self._unauthorized()
 
         if transport == 'websocket':
             ret = s.handle_get_request(environ, start_response)
@@ -461,6 +468,24 @@ class Server(object):
         return {'status': '401 UNAUTHORIZED',
                 'headers': [('Content-Type', 'text/plain')],
                 'response': b'Unauthorized'}
+
+    def _forbidden(self):
+        """Generate a unauthorized HTTP error response."""
+        return {'status': '403 FORBIDDEN',
+                'headers': [('Content-Type', 'text/plain')],
+                'response': b'Forbidden'}
+
+    def _authentication_timeout(self):
+        """Generate a unauthorized HTTP error response."""
+        return {'status': '419 AUTHENTICATION TIMEOUT',
+                'headers': [('Content-Type', 'text/plain')],
+                'response': b'Authentication Timeout'}
+
+    def _precondition_required(self):
+        """Generate a unauthorized HTTP error response."""
+        return {'status': '428 PRECONDITION REQUIRED',
+                'headers': [('Content-Type', 'text/plain')],
+                'response': b'Precondition Required'}
 
     def _cors_headers(self, environ):
         """Return the cross-origin-resource-sharing headers."""

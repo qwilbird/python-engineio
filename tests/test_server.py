@@ -586,6 +586,50 @@ class TestServer(unittest.TestCase):
         self.assertEqual(len(s.sockets), 0)
         self.assertEqual(start_response.call_args[0][0], '401 UNAUTHORIZED')
 
+    def test_connect_event_rejects_401(self):
+        s = server.Server()
+        s._generate_id = mock.MagicMock(return_value='123')
+        mock_event = mock.MagicMock(return_value=401)
+        s.on('connect')(mock_event)
+        environ = {'REQUEST_METHOD': 'GET', 'QUERY_STRING': ''}
+        start_response = mock.MagicMock()
+        s.handle_request(environ, start_response)
+        self.assertEqual(len(s.sockets), 0)
+        self.assertEqual(start_response.call_args[0][0], '401 UNAUTHORIZED')
+
+    def test_connect_event_rejects_403(self):
+        s = server.Server()
+        s._generate_id = mock.MagicMock(return_value='123')
+        mock_event = mock.MagicMock(return_value=403)
+        s.on('connect')(mock_event)
+        environ = {'REQUEST_METHOD': 'GET', 'QUERY_STRING': ''}
+        start_response = mock.MagicMock()
+        s.handle_request(environ, start_response)
+        self.assertEqual(len(s.sockets), 0)
+        self.assertEqual(start_response.call_args[0][0], '403 FORBIDDEN')
+
+    def test_connect_event_rejects_419(self):
+        s = server.Server()
+        s._generate_id = mock.MagicMock(return_value='123')
+        mock_event = mock.MagicMock(return_value=419)
+        s.on('connect')(mock_event)
+        environ = {'REQUEST_METHOD': 'GET', 'QUERY_STRING': ''}
+        start_response = mock.MagicMock()
+        s.handle_request(environ, start_response)
+        self.assertEqual(len(s.sockets), 0)
+        self.assertEqual(start_response.call_args[0][0], '419 AUTHENTICATION TIMEOUT')
+
+    def test_connect_event_rejects_428(self):
+        s = server.Server()
+        s._generate_id = mock.MagicMock(return_value='123')
+        mock_event = mock.MagicMock(return_value=428)
+        s.on('connect')(mock_event)
+        environ = {'REQUEST_METHOD': 'GET', 'QUERY_STRING': ''}
+        start_response = mock.MagicMock()
+        s.handle_request(environ, start_response)
+        self.assertEqual(len(s.sockets), 0)
+        self.assertEqual(start_response.call_args[0][0], '428 PRECONDITION REQUIRED')
+
     def test_method_not_found(self):
         s = server.Server()
         environ = {'REQUEST_METHOD': 'PUT', 'QUERY_STRING': ''}
